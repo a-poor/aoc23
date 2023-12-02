@@ -1,25 +1,48 @@
 use anyhow::{anyhow, Result};
 use aoc23::load_input_lines;
 
-fn find_first_digit<I>(chars: I) -> Result<i32> 
-where
-    I: IntoIterator<Item = char>
-{
-    for c in chars {
+const NUM_WORDS: [&'static str; 9] = [
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight", 
+    "nine",
+];
+
+fn reverse_string(s: &str) -> String {
+    s.chars().rev().collect::<String>()
+}
+
+fn find_first_digit(line: &str, rev: bool) -> Result<i32> {
+    for (i, c) in line.chars().enumerate() {
         match c {
             '0'..='9' => match c.to_digit(10) {
                 Some(n) => return i32::try_from(n).map_err(|err| err.into()),
                 None => return Err(anyhow!("Couldn't convert char '{}' into digit", c)),
             },
-            _ => {}
+            _ => {
+                for (j, w) in NUM_WORDS.iter().enumerate() {
+                    if (
+                        !rev && line[..=i].ends_with(w)
+                    ) || (
+                        rev && line[..=i].ends_with(&reverse_string(w))
+                    ) {
+                        return i32::try_from(j + 1).map_err(|err| err.into());
+                    }
+                }
+            },
         }
     }
     Err(anyhow!("no digit found in line"))
 }
 
 fn parse_line(line: String) -> Result<i32> {
-    let first = find_first_digit(line.chars())?;
-    let last = find_first_digit(line.chars().rev())?;
+    let first = find_first_digit(&line, false)?;
+    let last = find_first_digit(&reverse_string(&line), true)?;
     Ok(10 * first + last)
 }
 
@@ -53,17 +76,29 @@ mod tests {
 
     #[test]
     fn test_find_first_digit() -> Result<()> {
-        let fd = find_first_digit("a12".chars())?;
-        assert_eq!(fd, 1);
+        let s = "a1two2";
+        let fd = find_first_digit(s, false)?;
+        assert_eq!(fd, 1, "Failed with string: \"{}\"", s);
         
-        let fd = find_first_digit("9abc2".chars())?;
-        assert_eq!(fd, 9);
+        let s = "owt1a";
+        let fd = find_first_digit(s, true)?;
+        assert_eq!(fd, 2, "Failed with string: \"{}\"", s);
         
-        let fd = find_first_digit("abcd5".chars())?;
-        assert_eq!(fd, 5);
+        let s = "9abc2";
+        let fd = find_first_digit(s, false)?;
+        assert_eq!(fd, 9, "Failed with string: \"{}\"", s);
         
-        let fd = find_first_digit("9abcd5".chars().rev())?;
-        assert_eq!(fd, 5);
+        let s = "abonecd5";
+        let fd = find_first_digit(s, false)?;
+        assert_eq!(fd, 1, "Failed with string: \"{}\"", s);
+        
+        let s = "ab5enocd";
+        let fd = find_first_digit(s, true)?;
+        assert_eq!(fd, 5, "Failed with string: \"{}\"", s);
+        
+        let s = "abcdeight";
+        let fd = find_first_digit(s, false)?;
+        assert_eq!(fd, 8, "Failed with string: \"{}\"", s);
        
         Ok(())
     }
