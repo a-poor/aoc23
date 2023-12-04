@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context, Result};
-use aoc23::load_input_lines;
+use aoc23::load_input_lines_by_name;
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -61,7 +61,7 @@ impl Card {
 
 fn main() -> Result<()> {
     // Load the input data...
-    let input_lines = load_input_lines(4)?;
+    let input_lines = load_input_lines_by_name(file!())?;
 
     // Parse the input data...
     let cards = input_lines

@@ -1,5 +1,5 @@
 use anyhow::{Result, Context};
-use aoc23::load_input_lines;
+use aoc23::load_input_lines_by_name;
 
 #[derive(Debug, Default)]
 struct Point {
@@ -60,7 +60,7 @@ impl Number {
 
 fn main() -> Result<()> {
     // Load the input data...
-    let input_lines = load_input_lines(3)?;
+    let input_lines = load_input_lines_by_name(file!())?;
 
     let mut numbers = Vec::<Number>::new();
     let mut symbols = Vec::<Symbol>::new();

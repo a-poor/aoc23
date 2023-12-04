@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result, Context};
-use aoc23::load_input_lines;
+use aoc23::load_input_lines_by_name;
 
 #[derive(Debug, Default)]
 struct CubeSet {
@@ -90,7 +90,7 @@ impl GameRes {
 
 fn main() -> Result<()> {
     // Load the input data...
-    let input_lines = load_input_lines(2)?;
+    let input_lines = load_input_lines_by_name(file!())?;
 
     // Parse the lines as game results...
     let game_results = input_lines

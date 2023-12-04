@@ -1,7 +1,7 @@
 use regex::Regex;
 use anyhow::{anyhow, Result, Context};
 use std::collections::HashMap;
-use aoc23::load_input_lines;
+use aoc23::load_input_lines_by_name;
 
 #[allow(dead_code)]
 #[derive(Debug, Default)]
@@ -76,7 +76,7 @@ impl Card {
 
 fn main() -> Result<()> {
     // Load the input data...
-    let input_lines = load_input_lines(4)?;
+    let input_lines = load_input_lines_by_name(file!())?;
 
     let res = input_lines
         .into_iter()

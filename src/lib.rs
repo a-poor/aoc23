@@ -1,4 +1,5 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
+use regex::Regex;
 
 /// Loads the input data for the `d`th day and
 /// returns it as a single, raw `String`.
@@ -14,7 +15,27 @@ pub fn load_input_lines(d: u8) -> Result<Vec<String>> {
     Ok(lines)
 }
 
+fn parse_filename(name: &str) -> Result<u8> {
+    let re = Regex::new(r"(\d{2})\.txt")?;
+    let caps = re
+        .captures(name)
+        .ok_or(anyhow::anyhow!("Invalid filename"))?;
+    caps.get(1)
+        .ok_or(anyhow!("Regex didn't match against file \"{}\"", name))?
+        .as_str()
+        .parse::<u8>()
+        .map_err(|_| anyhow!("Failed to parse day from filename \"{}\"", name))
+}
 
+pub fn load_input_by_name(name: &str) -> Result<String> {
+    let d = parse_filename(name)?;
+    load_input(d)
+}
+
+pub fn load_input_lines_by_name(name: &str) -> Result<Vec<String>> {
+    let d = parse_filename(name)?;
+    load_input_lines(d)
+}
 
 #[cfg(test)]
 mod tests {
@@ -31,6 +52,18 @@ mod tests {
     fn test_load_input_lines() -> Result<()> {
         let data: Vec<String> = load_input_lines(1)?;
         assert!(data.len() > 0);
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_filename() -> Result<()> {
+        assert_eq!(parse_filename("01.txt")?, 1);
+        assert_eq!(parse_filename("02.txt")?, 2);
+        assert_eq!(parse_filename("25.txt")?, 25);
+        assert_eq!(parse_filename("foo/bar/baz/01.txt")?, 1);
+        assert_eq!(parse_filename("/bar/baz/01.txt")?, 1);
+        assert_eq!(parse_filename("./bar/baz/01.txt")?, 1);
+        assert_eq!(parse_filename("foo-bar-01.txt")?, 1);
         Ok(())
     }
 }

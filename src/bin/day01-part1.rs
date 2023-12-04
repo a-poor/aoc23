@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use aoc23::load_input_lines;
+use aoc23::load_input_lines_by_name;
 
 fn find_first_digit<I>(chars: I) -> Result<i32> 
 where
@@ -35,7 +35,7 @@ fn parse_file(lines: Vec<String>) -> Result<i32> {
 
 fn main() -> Result<()> {
     // Load the input data...
-    let input_lines = load_input_lines(1)?;
+    let input_lines = load_input_lines_by_name(file!())?;
 
     // Create a place to store the final count...
     let sum = parse_file(input_lines)?;
