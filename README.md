@@ -2,6 +2,7 @@
 
 Using Rust again for [Advent of Code 2023](https://adventofcode.com/2023)!
 
+## Table of Contents
 <!-- GENERATED BEGIN -->
 - Day 1:
   - [Input Data](/data/01.txt)
@@ -20,6 +21,9 @@ Using Rust again for [Advent of Code 2023](https://adventofcode.com/2023)!
   - [Part 1](/src/bin/day04-part1.rs)
   - [Part 2](/src/bin/day04-part2.rs)
 <!-- GENERATED END -->
+
+
+## Instructions for Use
 
 Run the challenge with:
 
