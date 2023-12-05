@@ -16,10 +16,10 @@ pub fn load_input_lines(d: u8) -> Result<Vec<String>> {
 }
 
 fn parse_filename(name: &str) -> Result<u8> {
-    let re = Regex::new(r"(\d{2})\.txt")?;
+    let re = Regex::new(r"day(\d{2})-part\d\.rs")?;
     let caps = re
         .captures(name)
-        .ok_or(anyhow::anyhow!("Invalid filename"))?;
+        .ok_or(anyhow::anyhow!("Invalid filename: {}", name))?;
     caps.get(1)
         .ok_or(anyhow!("Regex didn't match against file \"{}\"", name))?
         .as_str()
