@@ -8,7 +8,6 @@ enum Card {
     Ace,
     King,
     Queen,
-    Jack,
     Ten,
     Nine,
     Eight,
@@ -18,6 +17,7 @@ enum Card {
     Four,
     Three,
     Two,
+    Joker,
 }
 
 impl Card {
@@ -26,7 +26,6 @@ impl Card {
             Self::Ace => 14,
             Self::King => 13,
             Self::Queen => 12,
-            Self::Jack => 11,
             Self::Ten => 10,
             Self::Nine => 9,
             Self::Eight => 8,
@@ -36,6 +35,7 @@ impl Card {
             Self::Four => 4,
             Self::Three => 3,
             Self::Two => 2,
+            Self::Joker => 1,
         }
     }
 }
@@ -54,7 +54,6 @@ impl TryFrom<char> for Card {
             'A' => Ok(Self::Ace),
             'K' => Ok(Self::King),
             'Q' => Ok(Self::Queen),
-            'J' => Ok(Self::Jack),
             'T' => Ok(Self::Ten),
             '9' => Ok(Self::Nine),
             '8' => Ok(Self::Eight),
@@ -64,6 +63,7 @@ impl TryFrom<char> for Card {
             '4' => Ok(Self::Four),
             '3' => Ok(Self::Three),
             '2' => Ok(Self::Two),
+            'J' => Ok(Self::Joker),
             _ => Err(anyhow!("Invalid card char: {}", c)),
         }
     }
@@ -135,53 +135,87 @@ impl TryFrom<Vec<Card>> for Hand {
         cards.sort_by(|a, b| b.cmp(a));
 
         // Group the cards...
-        let grouped = cards
+        let mut grouped = cards
             .iter()
             .fold(HashMap::<Card, usize>::new(), |mut acc, c| {
                 *acc.entry(*c).or_insert(0) += 1;
                 acc
             });
 
-        // Check for five of a kind...
-        if grouped.len() == 1 {
+        // Take the jokers out and count them...
+        let joker_count = grouped.remove(&Card::Joker).unwrap_or(0);
+        
+        // Count everything else...
+        let n_five = grouped.iter().filter(|(_, count)| *count == &5).count();
+        let n_four = grouped.iter().filter(|(_, count)| *count == &4).count();
+        let n_three = grouped.iter().filter(|(_, count)| *count == &3).count();
+        let n_two = grouped.iter().filter(|(_, count)| *count == &2).count();
+        let n_one = grouped.iter().filter(|(_, count)| *count == &1).count();
+
+        // If all jokers, it's five of a kind...
+        if joker_count == 5 
+            || n_five == 1
+            || (n_four == 1 && joker_count == 1)
+            || (n_three == 1 && joker_count == 2)
+            || (n_two == 1 && joker_count == 3)
+            || (n_one == 1 && joker_count == 4)
+        {
             return Ok(Self::FiveOfAKind);
         }
 
-        // Check for four of a kind or full house...
-        if grouped.len() == 2 {
-            // Get the two card types...
-            let first = cards.get(0).unwrap(); // We know there are 5 cards
-            let second = cards.get(4).unwrap(); // We know there are 5 cards
-
-            // Check for four of a kind...
-            if grouped.get(first).unwrap() == &4 {
-                return Ok(Self::FourOfAKind);
-            }
-            if grouped.get(second).unwrap() == &4 {
-                return Ok(Self::FourOfAKind);
-            }
-
-            // Otherwise, it's a full house. Check the order...
-            return Ok(Self::FullHouse);
+        // Can we make four of a kind?
+        if n_four == 1 
+            || joker_count == 4
+            || (n_three >= 1 && joker_count >= 1)
+            || (n_two >= 1 && joker_count >= 2)
+            || (n_one >= 1 && joker_count >= 3)
+        {
+            return Ok(Self::FourOfAKind);
         }
 
-        // Check for three of a kind or two pair...
-        if grouped.len() == 3 {
-            // Is it three of a kind?
-            if grouped.iter().find(|(_, count)| *count == &3).is_some() {
-                return Ok(Self::ThreeOfAKind);
-            }
+        // Can we make a full house?
+        if (n_three == 1 && n_two == 1)
+            || (n_three >= 1 && n_one >= 1 && joker_count >= 1)
+            || (n_three >= 1 && joker_count >= 2)
+            || (n_two >= 2 && joker_count >= 1)
+            || (n_two >= 1 && n_one >= 1 && joker_count >= 2)
+            || (n_two >= 1 && joker_count >= 3)
+            || (n_one >= 2 && joker_count >= 3)
+        {
+            return Ok(Self::FullHouse);
+        }
+        
+        // Can we make three of a kind?
+        if n_three == 1 
+            || (n_two >= 1 && joker_count >= 1)
+            || (n_one >= 1 && joker_count >= 2)
+            || joker_count >= 3
+        {
+            // Otherwise, it's three of a kind...
+            return Ok(Self::ThreeOfAKind);
+        }
 
-            // Otherwise, it must be two pair...
+        // Can we make two pair?
+        if n_two >= 2
+            || (n_two >= 1 && n_one >= 1 && joker_count >= 1)
+            || (n_two >= 1 && joker_count >= 2)
+            || (n_one >= 2 && joker_count >= 2)
+            || (n_one >= 1 && joker_count >= 3)
+            || joker_count >= 4
+        {
             return Ok(Self::TwoPair);
         }
 
-        // Check for one pair...
-        if grouped.len() == 4 {
+
+        // Can we make one pair?
+        if n_two >= 1
+            || (n_one >= 1 && joker_count >= 1)
+            || joker_count >= 2
+        {
             return Ok(Self::OnePair);
         }
 
-        // Otherwise, it must be high card...
+        // Otherwise, it's high card...
         Ok(Self::HighCard)
     }
 }
@@ -282,7 +316,7 @@ mod tests {
     #[test]
     fn test_card_parse() -> Result<()> {
         assert_eq!(Card::try_from('A')?, Card::Ace);
-        assert_eq!(Card::try_from('J')?, Card::Jack);
+        assert_eq!(Card::try_from('J')?, Card::Joker);
         assert_eq!(Card::try_from('K')?, Card::King);
         assert_eq!(Card::try_from('T')?, Card::Ten);
         assert_eq!(Card::try_from('5')?, Card::Five);
@@ -295,8 +329,8 @@ mod tests {
         assert!(Card::Ace > Card::King);
         assert!(Card::Ace == Card::Ace);
         assert!(Card::Ten < Card::King);
-        assert!(Card::Jack > Card::Ten);
-        assert!(Card::Queen > Card::Jack);
+        assert!(Card::Joker < Card::Ten);
+        assert!(Card::Queen > Card::Joker);
         Ok(())
     }
 
@@ -371,7 +405,7 @@ mod tests {
                 Card::Ace,
                 Card::Ace,
                 Card::King,
-                Card::Jack,
+                Card::Joker,
             ])?,
             Hand::OnePair
         );
@@ -380,7 +414,7 @@ mod tests {
                 Card::Queen,
                 Card::Ace,
                 Card::King,
-                Card::Jack,
+                Card::Joker,
                 Card::Ten,
             ])?,
             Hand::HighCard
@@ -439,13 +473,6 @@ mod tests {
     
     #[test]
     fn test_handandbid_order() -> Result<()> {
-        let left = HandAndBid::parse("KK677 28")?;
-        let right = HandAndBid::parse("KTJJT 220")?;
-        println!("Left: {:?}", left);
-        println!("Right: {:?}", right);
-        println!("left.hand vs right.hand ? {:?}", left.hand.cmp(&right.hand));
-        println!("left.cards vs right.cards ? {:?}", left.cards.cmp(&right.cards));
-        
         let cases = vec![
             ("32T3K 765", "T55J5 684", Ordering::Less),
             ("T55J5 684", "KK677 28",  Ordering::Greater),

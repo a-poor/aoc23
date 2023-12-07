@@ -57,13 +57,12 @@ mod tests {
 
     #[test]
     fn test_parse_filename() -> Result<()> {
-        assert_eq!(parse_filename("01.txt")?, 1);
-        assert_eq!(parse_filename("02.txt")?, 2);
-        assert_eq!(parse_filename("25.txt")?, 25);
-        assert_eq!(parse_filename("foo/bar/baz/01.txt")?, 1);
-        assert_eq!(parse_filename("/bar/baz/01.txt")?, 1);
-        assert_eq!(parse_filename("./bar/baz/01.txt")?, 1);
-        assert_eq!(parse_filename("foo-bar-01.txt")?, 1);
+        assert_eq!(parse_filename("day01-part1.rs")?, 1);
+        assert_eq!(parse_filename("day02-part2.rs")?, 2);
+        assert_eq!(parse_filename("day25-part1.rs")?, 25);
+        assert_eq!(parse_filename("foo/bar/baz/day01-part2.rs")?, 1);
+        assert_eq!(parse_filename("/bar/baz/day01-part1.rs")?, 1);
+        assert_eq!(parse_filename("./bar/baz/day01-part1.rs")?, 1);
         Ok(())
     }
 }
