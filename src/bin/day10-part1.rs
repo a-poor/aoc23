@@ -1,8 +1,8 @@
-use std::collections::HashMap;
 use anyhow::{anyhow, Result};
 use aoc23::load_input_lines_by_name;
+use std::collections::HashMap;
 
-#[derive(Debug,Hash,Clone,Copy,PartialEq,Eq)]
+#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
 struct Point {
     x: i32,
     y: i32,
@@ -14,19 +14,19 @@ impl Point {
     }
 
     fn north(&self) -> Self {
-        Self::new(self.x, self.y-1)
+        Self::new(self.x, self.y - 1)
     }
 
     fn south(&self) -> Self {
-        Self::new(self.x, self.y+1)
+        Self::new(self.x, self.y + 1)
     }
 
     fn east(&self) -> Self {
-        Self::new(self.x+1, self.y)
+        Self::new(self.x + 1, self.y)
     }
 
     fn west(&self) -> Self {
-        Self::new(self.x-1, self.y)
+        Self::new(self.x - 1, self.y)
     }
 }
 
@@ -36,7 +36,7 @@ impl std::fmt::Display for Point {
     }
 }
 
-#[derive(Debug,Clone,Copy,PartialEq,Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Pipe {
     Start,
     Ground,
@@ -61,7 +61,7 @@ impl TryFrom<char> for Pipe {
             'J' => Ok(Pipe::NorthWest),
             'F' => Ok(Pipe::SouthEast),
             '7' => Ok(Pipe::SouthWest),
-            _ => Err(anyhow!("Invalid pipe character: {}", c))
+            _ => Err(anyhow!("Invalid pipe character: {}", c)),
         }
     }
 }
@@ -141,56 +141,20 @@ fn get_connections(grid: &Vec<Vec<Pipe>>, point: &Point) -> Option<(Point, Point
                 return Some((south, west));
             }
             panic!("Start point has no connections");
-        },
-        Pipe::NorthSouth => Some((
-            point.north(),
-            point.south(),
-        )),
-        Pipe::EastWest => Some((
-            point.east(),
-            point.west(),
-        )),
-        Pipe::NorthEast => Some((
-            point.north(),
-            point.east(),
-         )),
-        Pipe::NorthWest => Some((
-            point.north(),
-            point.west(),
-        )),
-        Pipe::SouthEast => Some((
-            point.south(),
-            point.east(),
-        )),
-        Pipe::SouthWest => Some((
-            point.south(),
-            point.west(),
-        )),
+        }
+        Pipe::NorthSouth => Some((point.north(), point.south())),
+        Pipe::EastWest => Some((point.east(), point.west())),
+        Pipe::NorthEast => Some((point.north(), point.east())),
+        Pipe::NorthWest => Some((point.north(), point.west())),
+        Pipe::SouthEast => Some((point.south(), point.east())),
+        Pipe::SouthWest => Some((point.south(), point.west())),
         Pipe::Ground => None,
     }
 }
 
 fn main() -> Result<()> {
-    let debug = false;
-
     // Load the input data and parse it as a grid...
     let input_lines = load_input_lines_by_name(file!())?;
-    // let input_lines = vec![
-    //     // ".....",
-    //     // ".S-7.",
-    //     // ".|.|.",
-    //     // ".L-J.",
-    //     // ".....",
-    //     "..F7.",
-    //     ".FJ|.",
-    //     "SJ.L7",
-    //     "|F--J",
-    //     "LJ...",
-    // ]
-    //     .into_iter()
-    //     .map(|s| s.to_string())
-    //     .collect::<Vec<String>>();
-
     let grid = input_lines
         .iter()
         .map(|line| {
@@ -200,28 +164,19 @@ fn main() -> Result<()> {
         })
         .collect::<Result<Vec<Vec<Pipe>>>>()?;
 
-    // Get the width and height of the grid...
-    // let height = grid.len();
-    // let width = grid[0].len();
-    
     // Find the starting point...
     let start = find_start(&grid)?;
-    if debug { println!("Start point: {}", start); }
-    
+
     // Find the connected points...
-    let (next1, next2) = get_connections(&grid, &start)
-        .ok_or(anyhow!("No connections found"))?;
+    let (next1, next2) = get_connections(&grid, &start).ok_or(anyhow!("No connections found"))?;
 
     // Follow the two paths back to the start...
     let path1 = {
-        if debug { println!("Path 1: {} -> {}", start, next1); }
         let mut path = vec![start, next1];
         let mut prev = start;
         let mut this = next1;
-        let mut dist = 2; // TODO - Remove me...
         while this != start {
-            let (a, b) = get_connections(&grid, &this)
-                .ok_or(anyhow!("No connections found"))?;
+            let (a, b) = get_connections(&grid, &this).ok_or(anyhow!("No connections found"))?;
             if a != prev {
                 path.push(a);
                 prev = this;
@@ -231,20 +186,15 @@ fn main() -> Result<()> {
                 prev = this;
                 this = b;
             }
-            if debug { println!("> {} -> {} :: dist = {:2}", prev, this, dist); }
-            dist += 1;
         }
         path
     };
     let path2 = {
-        if debug { println!("Path 1: {} -> {}", start, next1); }
         let mut path = vec![start, next2];
         let mut prev = start;
         let mut this = next2;
-        let mut dist = 2; // TODO - Remove me...
         while this != start {
-            let (a, b) = get_connections(&grid, &this)
-                .ok_or(anyhow!("No connections found"))?;
+            let (a, b) = get_connections(&grid, &this).ok_or(anyhow!("No connections found"))?;
             if a != prev {
                 path.push(a);
                 prev = this;
@@ -254,8 +204,6 @@ fn main() -> Result<()> {
                 prev = this;
                 this = b;
             }
-            if debug { println!("> {} -> {} :: dist = {:2}", prev, this, dist); }
-            dist += 1;
         }
         path
     };
@@ -281,20 +229,13 @@ fn main() -> Result<()> {
         })
         .collect::<Vec<(_, _)>>();
     dists.sort_by_key(|(_, d)| *d);
-   
-    if debug { 
-        println!("Dists:"); 
-        for (p, d) in dists.iter() {
-            println!("{} is {:2} steps from the start", p, d);
-        }
-        println!();
-    }
 
     // Find the furthest point...
-    let (furthest_point, furthest_dist) = dists
-        .last()
-        .ok_or(anyhow!("No points found"))?;
-    println!("Furthest point: {} ({} steps)", furthest_point, furthest_dist);
-    
+    let (furthest_point, furthest_dist) = dists.last().ok_or(anyhow!("No points found"))?;
+    println!(
+        "Furthest point: {} ({} steps)",
+        furthest_point, furthest_dist
+    );
+
     Ok(())
 }
