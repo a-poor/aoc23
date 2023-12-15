@@ -51,7 +51,16 @@ Using Rust again for [Advent of Code 2023](https://adventofcode.com/2023)!
 - Day 12:
   - [Input Data](/data/12.txt)
   - [Part 1](/src/bin/day12-part1.rs)
-  - [Part 2](/src/bin/day12-part2.rs)
+- Day 13:
+  - [Input Data](/data/13.txt)
+  - [Part 1](/src/bin/day13-part1.rs)
+- Day 14:
+  - [Input Data](/data/14.txt)
+  - [Part 1](/src/bin/day14-part1.rs)
+- Day 15:
+  - [Input Data](/data/15.txt)
+  - [Part 1](/src/bin/day15-part1.rs)
+  - [Part 2](/src/bin/day15-part2.rs)
 <!-- GENERATED END -->
 
 
