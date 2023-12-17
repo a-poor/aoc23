@@ -61,6 +61,10 @@ Using Rust again for [Advent of Code 2023](https://adventofcode.com/2023)!
   - [Input Data](/data/15.txt)
   - [Part 1](/src/bin/day15-part1.rs)
   - [Part 2](/src/bin/day15-part2.rs)
+- Day 16:
+  - [Input Data](/data/16.txt)
+  - [Part 1](/src/bin/day16-part1.rs)
+  - [Part 2](/src/bin/day16-part2.rs)
 <!-- GENERATED END -->
 
 
